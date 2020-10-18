@@ -28,16 +28,26 @@ class App extends Component {
       alert('Error: Enter value')
     }
   }
-2
-  edit_todos = (key, localKey) => {
+  2
+  edit_todos = (localKey) => {
     console.log('edit_todos()')
-    var update_value = prompt('Enter Todo', this.state.todos[localKey].title)
-    if (update_value == null) {
-      update_value = this.state.todos[localKey].title  
-    }
-    
-    this.state.todos[localKey].title = update_value
-    
+    this.state.todos[localKey].edit = true
+    this.setState({
+      todos: this.state.todos
+    })
+  }
+
+  handleChange = (e, localKey) => {
+    console.log('handleChange()')
+    this.state.todos[localKey].title = e.target.value
+    this.setState({
+      todos: this.state.todos
+    })
+  }
+
+  update_todos = (localKey, key) => {
+    console.log('update_todos()')
+    this.state.todos[localKey].edit = false
     firebase.database().ref('todos/' + key).set(this.state.todos[localKey])
     this.setState({
       todos: this.state.todos
@@ -95,8 +105,12 @@ class App extends Component {
               {todos.map((data, key) => {
                 return <tr key={key}>
                   <td>{key + 1}</td>
-                  <td>{data.title}</td>
-                  <td className='deleteOrEditClass' onClick={() => this.edit_todos(data.key, key)}>Edit</td>
+                  <td>{data.edit ? <input onChange={(e) => this.handleChange(e, key)} value={data.title} style={{ width: '100%' }} type="text" /> : data.title}</td>
+                  {data.edit ?
+                    <td className='deleteOrEditClass' onClick={() => this.update_todos(key, data.key)}>Update</td> :
+                    <td className='deleteOrEditClass' onClick={() => this.edit_todos(key)}>Edit</td>
+                  }
+
                   <td className='deleteOrEditClass' onClick={() => this.delete_todos(data.key, key)}>Delete</td>
                   <td>{data.dateCreated}</td>
                 </tr>
